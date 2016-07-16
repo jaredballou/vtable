@@ -102,13 +102,15 @@
 
           worker.postMessage(xhr.response, [xhr.response]);
         });
-	var base;
-	if (binary.hasOwnProperty('base')) {
-		base = binary.base;
-	} else if (game.hasOwnProperty('base')) {
-		base = game.base;
-	} else {
-		base = stateManager.state.gameList.base;
+	var base = stateManager.state.gameList.base;
+	if ('base' in binary) {
+		if (binary.base) {
+			base = binary.base;
+		}
+	} else if ('base' in game) {
+		if (game.base) {
+			base = game.base;
+		}
 	}
         xhr.open('GET', base + binary.path);
         xhr.responseType = 'arraybuffer';
