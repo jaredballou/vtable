@@ -21,7 +21,7 @@
       "path": "source/dods/dod/bin/server_srv.so"
     }]
   }, {
-    "appid": 22880,
+    "appid": 222880,
     "name": "Insurgency",
     "bins": [{
       "type": "Engine",
