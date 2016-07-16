@@ -23,12 +23,13 @@
   }, {
     "appid": 222880,
     "name": "Insurgency",
+    "base": "http://ins.jballou.com/fastdl/bin/",
     "bins": [{
       "type": "Engine",
-      "path": "source/insurgency/bin/engine_srv.so"
+      "path": "engine_srv.so"
     }, {
       "type": "Server",
-      "path": "source/insurgency/insurgency/bin/server_srv.so"
+      "path": "server_srv.so"
     }]
   }, {
     "appid": 320,

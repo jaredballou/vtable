@@ -89,7 +89,7 @@
         <a href={props.href} target="_blank" className="text-muted">{props.children}</a>
 
       const handleSteamGameButtonClick = (game, binary, event) => {
-        stateManager.setState({ selectedBinary: (game+' '+binary.type+' binary'), binaryDownloadProgress: { loaded: 0, total: 0 } });
+        stateManager.setState({ selectedBinary: (game.name+' '+binary.type+' binary'), binaryDownloadProgress: { loaded: 0, total: 0 } });
 
         var xhr = new XMLHttpRequest();
 
@@ -102,8 +102,15 @@
 
           worker.postMessage(xhr.response, [xhr.response]);
         });
-
-        xhr.open('GET', stateManager.state.gameList.base + binary.path);
+	var base;
+	if (binary.hasOwnProperty('base')) {
+		base = binary.base;
+	} else if (game.hasOwnProperty('base')) {
+		base = game.base;
+	} else {
+		base = stateManager.state.gameList.base;
+	}
+        xhr.open('GET', base + binary.path);
         xhr.responseType = 'arraybuffer';
 
         xhr.send();
@@ -127,7 +134,7 @@
               {props.game.bins.map((binary) =>
                 <Button
                   key={binary.type} bsSize="large"
-                  onClick={handleSteamGameButtonClick.bind(null, props.game.name, binary)}
+                  onClick={handleSteamGameButtonClick.bind(null, props.game, binary)}
                 >
                   <Icon type={
                     (binary.type === 'Engine') ? 'tachometer' :
