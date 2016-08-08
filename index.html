@@ -247,13 +247,13 @@
           queryResults = programInfo.classes
             .filter(filterFunction)
             .sort(sortFunction)
-            .slice(0, 100);
+            .slice(0, 10);
 
-          if (queryResults.length < 100) {
+          if (queryResults.length < 10) {
             Array.prototype.push.apply(queryResults, programInfo.functions
               .filter(filterFunction)
               .sort(sortFunction)
-              .slice(0, 100 - queryResults.length));
+              .slice(0, 10 - queryResults.length));
           }
         }
 
