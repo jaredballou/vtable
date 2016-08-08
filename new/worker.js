@@ -36,35 +36,20 @@ function demangleSymbol(func) {
   }
 }
 
-function getDataForSymbol(programInfo, symbol) {
-  var dataStart;
-  var dataChunks;
-
-  if (symbol.section === 0) {
-    return null;
-  } else if (symbol.section === programInfo.rodataIndex) {
-    dataStart = programInfo.rodataStart;
-    dataChunks = programInfo.rodataChunks;
-  } else if (symbol.section === programInfo.relRodataIndex) {
-    dataStart = programInfo.relRodataStart;
-    dataChunks = programInfo.relRodataChunks;
-  } else {
-    return null;
-  }
-
-  if (dataStart.high !== 0 || symbol.address.high !== 0 || symbol.size.high !== 0) {
+function getRodata(programInfo, address, size) {
+  if (programInfo.rodataStart.high !== 0 || address.high !== 0 || size.high !== 0) {
     throw '>= 32-bit rodata is not supported';
   }
 
-  for (var i = 0; i < dataChunks.size(); ++i) {
-    var chunk = dataChunks.get(i);
+  for (var i = 0; i < programInfo.rodataChunks.size(); ++i) {
+    var chunk = programInfo.rodataChunks.get(i);
 
     if (chunk.offset.high !== 0) {
       throw '>= 32-bit rodata is not supported';
     }
 
-    var start = symbol.address.low - (dataStart.low + chunk.offset.low);
-    var end = start + symbol.size.low;
+    var start = address.low - (programInfo.rodataStart.low + chunk.offset.low);
+    var end = start + size.low;
 
     if (start < 0 || end > chunk.data.length) {
       continue;
@@ -136,16 +121,6 @@ self.onmessage = function(event) {
 
   console.info("virtual classes: " + listOfVirtualClasses.length);
 
-  console.info("relocations: " + programInfo.relocations.size());
-
-  var relocationMap = {};
-
-  for (var i = 0; i < programInfo.relocations.size(); ++i) {
-    var relocation = programInfo.relocations.get(i);
-
-    relocationMap[key(relocation.address)] = relocation.target;
-  }
-
   var pureVirtualFunction = {
     id: null,
     name: '(pure virtual function)',
@@ -169,12 +144,9 @@ self.onmessage = function(event) {
     var symbol = listOfVirtualClasses[classIndex];
     var name = demangleSymbol(symbol.name).substr(11);
 
-    var data = getDataForSymbol(programInfo, symbol);
+    var data = getRodata(programInfo, symbol.address, symbol.size);
     if (!data) {
-      if (symbol.section !== 0) {
-        console.warn('VTable for ' + name + ' is outside data');
-      }
-
+      //console.warn('VTable for ' + name + ' is outside .rodata');
       sendProgressUpdate(false);
       continue;
     }
@@ -202,21 +174,6 @@ self.onmessage = function(event) {
       if (programInfo.addressSize > Uint32Array.BYTES_PER_ELEMENT) {
         functionAddress.high = dataView[++functionIndex];
         loaded += 1;
-      }
-
-      if (programInfo.addressSize === Uint32Array.BYTES_PER_ELEMENT) {
-        var localAddress = {
-          high: 0,
-          low: symbol.address.low + (functionIndex * Uint32Array.BYTES_PER_ELEMENT),
-          unsigned: true,
-        };
-
-        var targetAddress = relocationMap[key(localAddress)];
-        if (targetAddress) {
-          functionAddress = targetAddress;
-        }
-      } else {
-        console.warn('Relocations not supported for 64-bit bins');
       }
 
       var functionSymbol = addressToSymbolMap[key(functionAddress)];
