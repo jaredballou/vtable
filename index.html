@@ -235,16 +235,17 @@
           const filterFunction = (value) => value.searchKey.indexOf(lowercaseQuery) !== -1;
           const sortFunction = (a, b) => a.name.length - b.name.length;
 
+          var maxResults = 25;
           queryResults = programInfo.classes
             .filter(filterFunction)
             .sort(sortFunction)
-            .slice(0, 10);
+            .slice(0, maxResults);
 
-          if (queryResults.length < 10) {
+          if (queryResults.length < maxResults) {
             Array.prototype.push.apply(queryResults, programInfo.functions
               .filter(filterFunction)
               .sort(sortFunction)
-              .slice(0, 10 - queryResults.length));
+              .slice(0, maxResults - queryResults.length));
           }
         }
 
